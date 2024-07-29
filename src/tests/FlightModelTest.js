@@ -59,8 +59,42 @@ function testPathReconstrunction() {
     //     console.log("id: " + key + " value: " + value);
     // }
 }
+function testYensAlgorithm() {
+    console.log("---")
+    const res = Flight.graph(1,8,5,0).then((results) => {
+
+        //console.log(JSON.stringify(results))
+        console.log("aaaaaaaaaaa")
+        
+    //     for (const [key, value] of path ){
+        
+    //     console.log("id: " + key + " value: " + value);
+    // }
+
+    results.forEach((route) => {
+        let routeCost = 0
+        let routeTrace = []
+        let routeIds = []
+        for(let i = 0; i < route.length; i++) {
+            routeCost += +route[i].cost
+            routeTrace.push([route[i].departure_airport_id, route[i].arrival_airport_id])
+            routeIds.push(route[i].id)
+        }
+    
+        console.log(routeCost)
+        console.log(routeIds)
+        console.log(JSON.stringify(routeTrace))
+    })
+    process.exit(0)
+    }).catch((err) => {
+        console.log(err)
+        process.exit(1)
+    }) 
+    console.log(res)
+}
 
 // Call the test function
 //testGetAllFlights();
 //testGraphFlights()
-testPathReconstrunction()
+//testPathReconstrunction()
+testYensAlgorithm()
