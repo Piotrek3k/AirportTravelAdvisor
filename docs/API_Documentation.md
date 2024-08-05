@@ -12,7 +12,7 @@ Implementation of airport travel system. System lists available flights between 
 ## Technical requirements
 
 - Programming language - Javascript
-- Server Framework - NodeJS
+- Backend - NodeJS
 - Database - MySQL
 - Docker
 
