@@ -62,7 +62,7 @@ http://localhost:3000
 
 ### Get All Users
 
-- **URL:** `GET /api/v1/users`
+- **URL:** `GET /api/users`
 - **Description:** Retrieve a list of all users.
 - **Responses:**
     - **200 OK:** Successfully retrieved the users.
@@ -70,7 +70,7 @@ http://localhost:3000
 
 ### Get a User by ID
 
-- **URL:** `GET /api/v1/users/{userId}`
+- **URL:** `GET /api/users/{userId}`
 - **Description:** Retrieve a user by ID.
 - **Parameters:**
     - **userId:** (string, required) - User's ID
@@ -90,7 +90,7 @@ http://localhost:3000
 
 ### Update a User
 
-- **URL:** `PUT /api/v1/users/{userId}`
+- **URL:** `PUT /api/users/{userId}`
 - **Description:** Update a user's details.
 - **Parameters:**
     - **userId:** (string, required) - User's ID
@@ -110,7 +110,7 @@ http://localhost:3000
 
 ### Delete a User
 
-- **URL:** `DELETE /api/v1/users/{userId}`
+- **URL:** `DELETE /api/users/{userId}`
 - **Description:** Delete a user by ID.
 - **Parameters:**
     - **userId:** (string, required) - User's ID
@@ -125,7 +125,7 @@ http://localhost:3000
 #### Generate Token
 Request body: 
 ```sh
-curl -X POST 'api/v2/auth/login' \
+curl -X POST 'api/auth/login' \
 -H 'Content-Type: application/json' \
 -d '{
     "email": "john.doe@example.com",
@@ -142,7 +142,7 @@ Response body:
 #### Create a User
 
 ```sh
-curl -X POST 'api/v1/users' \
+curl -X POST 'api/users' \
 -H 'Authorization: Bearer <token>' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -155,7 +155,7 @@ curl -X POST 'api/v1/users' \
 #### Get all Users
 Request body:
 ```sh
-curl -X GET 'api/v1/users' \
+curl -X GET 'api/users' \
 -H 'Authorization: Bearer <token>'
 ```
 Response body:
@@ -183,7 +183,7 @@ Response body:
 #### Get User by ID
 Request body:
 ```sh
-curl -X GET 'api/v1/users/1' \
+curl -X GET 'api/users/1' \
 -H 'Authorization: Bearer <token>'
 
 ```
@@ -201,7 +201,7 @@ Response body:
 ```
 #### Update a User
 ```sh
-curl -X PUT 'api/v1/users/1' \
+curl -X PUT 'api/users/1' \
 -H 'Authorization: Bearer <token>' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -213,7 +213,7 @@ curl -X PUT 'api/v1/users/1' \
 #### Delete a User
 
 ```sh
-curl -X DELETE 'api/v1/users/1' \
+curl -X DELETE 'api/users/1' \
 -H 'Authorization: Bearer <token>'
 
 
@@ -222,7 +222,7 @@ curl -X DELETE 'api/v1/users/1' \
 
 ### Create an Airport
 
-- **URL:** `POST /api/v1/airports`
+- **URL:** `POST /api/airports`
 - **Description:** Create a new airport.
 - **Request Body:**
     ```json
@@ -242,7 +242,7 @@ curl -X DELETE 'api/v1/users/1' \
 ### Get Routes Between Two Airports
 
 
-- **URL:** `GET /api/v1/routes`
+- **URL:** `GET /api/routes`
 - **Description:** Retrieve routes between two airports based on the given criteria.
 - **Parameters:**
     - **departure_airport_id:** (int, required) - Departure airport ID
@@ -250,14 +250,14 @@ curl -X DELETE 'api/v1/users/1' \
     - **date:** (string, required) - Date in `YYYY-MM-DD` format
     - **criteria:** (int, required) - Criteria (0, 1, or 2)
 - **Request:**
-    ```sh
-    curl -X GET 'api/v2/routes' \
-    -H 'Authorization: Bearer <token>' \
-    -G --data-urlencode 'departure_airport_id=1' \
-    --data-urlencode 'arrival_airport_id=2' \
-    --data-urlencode 'date=2024-07-24' \
-    --data-urlencode 'criteria=0'
-    ```
+```sh
+curl -X GET 'api/routes' \
+-H 'Authorization: Bearer <token>' \
+-G --data-urlencode 'departure_airport_id=1' \
+--data-urlencode 'arrival_airport_id=2' \
+--data-urlencode 'date=2024-07-24' \
+--data-urlencode 'criteria=0'
+ ```
 - **Responses:**
     - **200 OK:** Successfully retrieved the routes.
         ```json
@@ -288,7 +288,7 @@ curl -X DELETE 'api/v1/users/1' \
     - **404 Not Found:** No routes found for the given criteria.
 ### Get All Airports
 
-- **URL:** `GET /api/v1/airports`
+- **URL:** `GET /api/airports`
 - **Description:** Retrieve a list of all airports.
 - **Responses:**
     - **200 OK:** Successfully retrieved the airports.
@@ -297,7 +297,7 @@ curl -X DELETE 'api/v1/users/1' \
 
 ### Get an Airport by ID
 
-- **URL:** `GET /api/v1/airports/{airportId}`
+- **URL:** `GET /api/airports/{airportId}`
 - **Description:** Retrieve an airport by ID.
 - **Parameters:**
     - **airportId:** (string, required) - Airport's ID
@@ -318,7 +318,7 @@ curl -X DELETE 'api/v1/users/1' \
 
 ### Update an Airport
 
-- **URL:** `PUT /api/v1/airports/{airportId}`
+- **URL:** `PUT /api/airports/{airportId}`
 - **Description:** Update an airport's details.
 - **Parameters:**
     - **airportId:** (string, required) - Airport's ID
@@ -339,7 +339,7 @@ curl -X DELETE 'api/v1/users/1' \
 
 ### Delete an Airport
 
-- **URL:** `DELETE /api/v1/airports/{airportId}`
+- **URL:** `DELETE /api/airports/{airportId}`
 - **Description:** Delete an airport by ID.
 - **Parameters:**
     - **airportId:** (string, required) - Airport's ID
@@ -356,7 +356,7 @@ curl -X DELETE 'api/v1/users/1' \
 
 Request body: 
 ```sh
-curl -X POST 'api/v1/airports' \
+curl -X POST 'api/airports' \
 -H 'Authorization: Bearer <token>' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -370,7 +370,7 @@ curl -X POST 'api/v1/airports' \
 #### Get all Airports
 Request body:
 ```sh
-curl -X GET 'api/v1/airports' \
+curl -X GET 'api/airports' \
 -H 'Authorization: Bearer <token>'
 
 ```
@@ -396,7 +396,7 @@ Response body:
 #### Get Airport by ID
 Request body:
 ```sh
-curl -X GET 'api/v1/airports/1' \
+curl -X GET 'api/airports/1' \
 -H 'Authorization: Bearer <token>'
 
 ```
@@ -415,7 +415,7 @@ Response body:
 #### Update Airport
 Request body:
 ```sh
-curl -X PUT 'api/v1/airports/1' \
+curl -X PUT 'api/airports/1' \
 -H 'Authorization: Bearer <token>' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -429,7 +429,7 @@ curl -X PUT 'api/v1/airports/1' \
 #### Delete Airport
 Request body:
 ```sh
-curl -X DELETE 'api/v1/airports/1' \
+curl -X DELETE 'api/airports/1' \
 -H 'Authorization: Bearer <token>'
 
 ```
@@ -438,7 +438,7 @@ curl -X DELETE 'api/v1/airports/1' \
 #### Get Routes between two Airports
 Request body:
 ```sh
-curl -X GET 'api/v1/routes' \
+curl -X GET 'api/routes' \
 -H 'Authorization: Bearer <token>' \
 -G --data-urlencode 'departure_airport_id=1' \
 --data-urlencode 'arrival_airport_id=2' \
@@ -475,7 +475,7 @@ Response body:
 
 ### Create a Flight
 
-- **URL:** `POST /api/v1/flights`
+- **URL:** `POST /api/flights`
 - **Description:** Create a new flight.
 - **Request Body:**
     ```json
@@ -508,7 +508,7 @@ Response body:
 
 ### Get All Flights
 
-- **URL:** `GET /api/v1/flights`
+- **URL:** `GET /api/flights`
 - **Description:** Retrieve a list of all flights.
 - **Responses:**
     - **200 OK:** Successfully retrieved the flights.
@@ -540,7 +540,7 @@ Response body:
 
 ### Get a Flight by ID
 
-- **URL:** `GET /api/v1/flights/{flightId}`
+- **URL:** `GET /api/flights/{flightId}`
 - **Description:** Retrieve a flight by ID.
 - **Parameters:**
     - **flightId:** (int, required) - Flight's ID
@@ -564,7 +564,7 @@ Response body:
 
 ### Update a Flight
 
-- **URL:** `PUT /api/v1/flights/{flightId}`
+- **URL:** `PUT /api/flights/{flightId}`
 - **Description:** Update a flight's details.
 - **Parameters:**
     - **flightId:** (int, required) - Flight's ID
@@ -600,7 +600,7 @@ Response body:
 
 ### Delete a Flight
 
-- **URL:** `DELETE /api/v2/flights/{flightId}`
+- **URL:** `DELETE /api/flights/{flightId}`
 - **Description:** Delete a flight by ID.
 - **Parameters:**
     - **flightId:** (int, required) - Flight's ID
@@ -614,7 +614,7 @@ Response body:
 
 Request body: 
 ```sh
-curl -X POST 'api/v1/flights' \
+curl -X POST 'api/flights' \
 -H 'Authorization: Bearer <token>' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -648,7 +648,7 @@ Response body:
 
 Request body: 
 ```sh
-curl -X GET 'api/v1/flights' \
+curl -X GET 'api/flights' \
 -H 'Authorization: Bearer <token>'
 
 ```
@@ -683,7 +683,7 @@ Response body:
 
 Request body: 
 ```sh
-curl -X GET 'api/v1/flights/1' \
+curl -X GET 'api/flights/1' \
 -H 'Authorization: Bearer <token>'
 
 ```
@@ -707,7 +707,7 @@ Response body:
 
 Request body: 
 ```sh
-curl -X PUT 'api/v2/flights/1' \
+curl -X PUT 'api/flights/1' \
 -H 'Authorization: Bearer <token>' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -738,6 +738,6 @@ Response body:
 #### Delete Flight
 Request body:
 ```sh
-curl -X DELETE 'api/v2/flights/1' \
+curl -X DELETE 'api/flights/1' \
 -H 'Authorization: Bearer <token>'
 ```
