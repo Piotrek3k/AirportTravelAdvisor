@@ -5,7 +5,27 @@ const Flight = {
     getAll: (callback) => {
         db.query(`SELECT * FROM flights`, callback)
     },
-    graph: async (departure, destination, K, criteria) => {
+    getById: (id, callback) => {
+        db.query('SELECT * FROM flights WHERE id = ?', [id], callback);
+    },
+
+    create: (flight, callback) => {
+        const { flight_number, airline, departure_airport_id, arrival_airport_id, cost, departure_time, arrival_time } = flight;
+        db.query('INSERT INTO flights (flight_number, airline, departure_airport_id, arrival_airport_id, cost, departure_time, arrival_time) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+            [flight_number, airline, departure_airport_id, arrival_airport_id, cost, departure_time, arrival_time], callback);
+    },
+
+    update: (id, flight, callback) => {
+        const { flight_number, airline, departure_airport_id, arrival_airport_id, cost, departure_time, arrival_time } = flight;
+        db.query('UPDATE flights SET flight_number = ?, airline = ?, departure_airport_id = ?, arrival_airport_id = ?, cost = ?, departure_time = ?, arrival_time = ? WHERE id = ?', 
+            [flight_number, airline, departure_airport_id, arrival_airport_id, cost, departure_time, arrival_time, id], callback);
+    },
+
+    delete: (id, callback) => {
+        db.query('DELETE FROM flights WHERE id = ?', [id], callback);
+    },
+    findRoute: async (departure, destination, K, criteria, targetDate) => {
+        console.log("----------------------------------")
         try {
             const graph = new Graph();
 
@@ -29,14 +49,21 @@ const Flight = {
                     resolve(result);
                 });
             });
-            graph.flights = flights;
+            const filteredFlights = flights.filter(item => {
+                //console.log(JSON.stringify(item))
+                const datePart = JSON.stringify(item.departure_time).slice(1,11);
+                //console.log(datePart)
+                console.log(datePart === targetDate)
+                return datePart === targetDate;
+              });
+            graph.flights = filteredFlights;
 
             // Run the dijkstra algorithm with the provided departure and criteria
             const result = graph.dijkstra(departure, criteria);
 
             const {distances, previous} = result;
-        
-            const result2 = graph.yenKShortestPaths(departure,destination,K, criteria)
+             const path = reconstructPath(result.previous, departure, destination) 
+           const result2 = graph.yenKShortestPaths(departure,destination,K, criteria)
             return result2
 
         } catch (error) {
@@ -104,11 +131,12 @@ class Graph {
         const toVisit = new Set();
         const previous = new Map();
         toVisit.add(airport_id);
-        distances.set(airport_id, 0);
+        distances.set(airport_id, {flightCost: 0, flightArrival: 0});
 
         this._airports.forEach(n => {
             if (airport_id !== n.id) {
-                distances.set(n.id, Infinity);
+                distances.set(n.id, {flightCost: Infinity, flightArrival: 0});
+                console.log(distances.get(2))
                 toVisit.add(n.id);
             }
             previous.set(n.id, null);
@@ -118,25 +146,35 @@ class Graph {
 
     dijkstraAlgorithm(distances, toVisit, previous, criteria) {
         const airportValue = findKeyWithLowestValue(distances, toVisit);
-
+        //console.log("something")
+        if (airportValue=== null){
+            return { distances, previous };
+        }
         this.flights.forEach(flight => {
             if (flight.departure_airport_id === airportValue) {
                 let cost;
+                const departureTime = new Date(flight.departure_time).getTime();
+                const arrivalTime = new Date(flight.arrival_time).getTime();
                 if (criteria === 1) {
-                    const departureTime = new Date(flight.departure_time).getTime();
-                    const arrivalTime = new Date(flight.arrival_time).getTime();
                     cost = arrivalTime - departureTime;
                 } else {
                     cost = +flight.cost;
                 }
-
-                if (+cost + +distances.get(airportValue) < distances.get(flight.arrival_airport_id)) {
-                    distances.set(flight.arrival_airport_id, +cost + +distances.get(airportValue));
+                if(flight.arrival_airport_id === 10) {
+                    // console.log("first part: ", +cost + +distances.get(airportValue).flightCost)
+                    // console.log("second part: ", distances.get(flight.arrival_airport_id).flightCost)
+                    // console.log("third part: ", distances.get(airportValue).flightArrival + 7200000)
+                    // console.log("fourth part: ", departureTime)
+                }
+                // adding the value of two hours to the arrival time
+                if (+cost + +distances.get(airportValue).flightCost < distances.get(flight.arrival_airport_id).flightCost && +distances.get(airportValue).flightArrival + 7200000 <= departureTime) {
+                    //console.log("11111111")
+                    distances.set(flight.arrival_airport_id,{ flightCost: +cost + +distances.get(airportValue).flightCost, flightArrival: arrivalTime});
                     previous.set(flight.arrival_airport_id, flight);
                 }
             }
         });
-
+       // console.log("********************************")
         toVisit.delete(airportValue);
 
         if (toVisit.size === 0) {
@@ -205,6 +243,7 @@ class Graph {
                                         this.removeFlight(flight.id);
                                         edgesRemoved.push(flight);
                             }
+                            
                         })
                         //console.log(JSON.stringify(edgesRemoved)) tu jest git
                     }
@@ -315,11 +354,27 @@ function findKeyWithLowestValue(distances, toVisit) {
     let lowestKey = null;
   
     for (const [key, value] of distances) {
-         //console.log("key: " + key + ", value: " + value)
-        // console.log(value < lowestValue && toVisit.has(key))
-      if (value < lowestValue&& toVisit.has(key)) {
-        lowestValue = value;
+        //  console.log("key: " + key + ", value: " + JSON.stringify(value))
+        // console.log(value.flightCost < lowestValue && toVisit.has(key))
+        // console.log("size: " + toVisit.size)
+        // console.log(lowestValue)
+        // console.log(lowestKey)
+        if(toVisit.size === 1) {
+        //     const iterator1 = toVisit.entries();
+        //     console.log("czy to ta trójka: ", value.flightCost < lowestValue)
+        //     console.log("aaaaaa" + value.flightCost)
+        //     console.log("eeee", toVisit.has(key) )
+        //     for (const entry of iterator1) {
+        //     console.log(entry);
+        //     //console.log(distances(entry))
+        //     // Expected output: Array [42, 42]
+        //     // Expected output: Array ["forty two", "forty two"]
+        // }
+        }
+      if (value.flightCost < lowestValue&& toVisit.has(key)) {
+        lowestValue = value.flightCost;
         lowestKey = key;
+        //console.log("lowestKey: " + lowestKey)
       }
     }
   
