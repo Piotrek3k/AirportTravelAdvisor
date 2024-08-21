@@ -1,7 +1,6 @@
 const Flight = require('../models/flightModel');
 
 exports.getAllFlights = (req, res) => {
-    console.log("here2")
     Flight.getAll((err, results) => {
         if (err) {
             res.status(500).send(err);
@@ -16,9 +15,9 @@ exports.getFlightById = (req, res) => {
     Flight.getById(id, (err, result) => {
         if (err) {
             res.status(500).send(err);
-        } else if (!result) {
+        } else if (result.length === 0) {
             res.status(404).send('Flight not found');
-        } else {
+        } else {        
             res.status(200).json(result[0]);
         }
     });
@@ -62,14 +61,16 @@ exports.deleteFlight = (req, res) => {
     });
 };
 
-exports.findRoute = (req, res) => {
-    console.log("here")
+exports.findRoute = async (req, res) => {
     const departure_id = req.body.departure_id;
     const arrival_id = req.body.arrival_id;
     const criteria = req.body.criteria
-    Flight.findRoute(departure_id,arrival_id,20,criteria).then((results) => {
-        res.status(201).json(results)
-    }).catch((err) => {
-        res.status(500).send(err)
-    })
+    const targetDate = req.body.targetDate
+    try {
+        const results = await Flight.findRoute(departure_id, arrival_id, 20, criteria, targetDate);
+        res.status(201).json(results);
+    } catch (err) {
+        console.error("Error caught in controller:", err);
+        res.status(500).send(err);
+    }
 }
