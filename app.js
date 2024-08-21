@@ -1,13 +1,4 @@
-// const express = require('express');
-// const app = express();
 
-// // Use built-in middleware for parsing JSON and urlencoded data
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-
-// app.listen(3000, () => {
-//     console.log('Server started on port 3000');
-// });
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -15,6 +6,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const airportRoutes = require('./src/routes/airportRoutes');
 const flightRoutes = require('./src/routes/flightRoutes');
+const userRoutes = require('./src/routes/userRoutes');
+const authRoutes = require('./src/routes/authRoutes');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -28,8 +21,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/v1/airports', airportRoutes);
-app.use('/api/v1/flights', flightRoutes);
+app.use('/api/airports', airportRoutes);
+app.use('/api/flights', flightRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -44,7 +39,7 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port 3000`);
 });
 
 module.exports = app;

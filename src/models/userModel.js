@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../../config/dbConfig');
 
 
 const User = {
@@ -15,9 +15,9 @@ const User = {
     },
     
     create: (user, callback) => {
-        const { username, password, email, full_name } = user;
-        db.query('INSERT INTO users (username, password, email, full_name) VALUES (?, ?, ?, ?)', 
-            [username, password, email, full_name], callback);
+        const { username, email, password } = user;
+        db.query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', 
+            [username, email, password], callback);
     },
 
     update: (id, user, callback) => {

@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const flightController = require('../controllers/flightController');
+const authMiddleware = require('../middleware/authMiddelware');
 
-router.get('/', flightController.getAllFlights);
-router.get('/:id', flightController.getFlightById);
-router.post('/', flightController.createFlight);
-router.put('/:id', flightController.updateFlight);
-router.delete('/:id', flightController.deleteFlight);
-router.post('/search', flightController.findRoute);
+router.get('/', authMiddleware, flightController.getAllFlights);
+router.get('/:id', authMiddleware, flightController.getFlightById);
+router.post('/', authMiddleware, flightController.createFlight);
+router.put('/:id', authMiddleware, flightController.updateFlight);
+router.delete('/:id', authMiddleware, flightController.deleteFlight);
+router.post('/search', authMiddleware, flightController.findRoute);
 
 module.exports = router;
