@@ -25,10 +25,9 @@ const Flight = {
         db.query('DELETE FROM flights WHERE id = ?', [id], callback);
     },
     findRoute: async (departure, destination, K, criteria, targetDate) => {
-        console.log("----------------------------------")
         try {
             const graph = new Graph();
-
+    
             // Fetch all airports
             const airports = await new Promise((resolve, reject) => {
                 Airport.getAll((error, result) => {
@@ -39,7 +38,7 @@ const Flight = {
                 });
             });
             graph.airports = airports;
-
+    
             // Fetch all flights
             const flights = await new Promise((resolve, reject) => {
                 db.query('SELECT * FROM flights', (error, result) => {
@@ -49,39 +48,40 @@ const Flight = {
                     resolve(result);
                 });
             });
+    
+            // Filter flights based on the targetDate
             const filteredFlights = flights.filter(item => {
-                //console.log(JSON.stringify(item))
-                const datePart = JSON.stringify(item.departure_time).slice(1,11);
-                //console.log(datePart)
-                console.log(datePart === targetDate)
+                const datePart = JSON.stringify(item.departure_time).slice(1, 11);
                 return datePart === targetDate;
-              });
+            });
             graph.flights = filteredFlights;
-            graph.removeFlight(108)
-            // Run the dijkstra algorithm with the provided departure and criteria
-            //let result = graph.dijkstra(departure, criteria, 1718101800000 );
-            // const {distances, previous} = result;
-            // const path = reconstructPath(result.previous, departure, destination) 
-            const result = graph.dijkstra(1, 1, 0);
-            //console.log(JSON.stringify(result.previous))
-            const initialPath = reconstructPath(result.previous, departure, destination);
-            //return initialPath
-            // const {distances, previous} = result;
-            // const path = reconstructPath(result.previous, departure, destination) 
-            const result2 = graph.yenKShortestPaths(departure,destination,K, criteria)
-
-           const resultF = result2.filter(path => graph.isValidPath(path)) 
-           let pathsAndCosts = result2.forEach(path => {
-                let pathCost;
-                let pathTime;
-                path.forEach(flight => {
-                    pathCost += +flight.cost
-                })
-           })
-            return result2
-
+    
+            // Run the Yen's K-Shortest Paths algorithm
+            const resultPaths = graph.yenKShortestPaths(departure, destination, K, criteria);
+    
+            // Calculate the total cost and time for each path
+            for (let i = 0; i < resultPaths.length; i++) {
+                let pathCost = 0;
+                let pathTime = 0;
+    
+                for (let j = 0; j < resultPaths[i].length; j++) {
+                    pathCost += +resultPaths[i][j].cost;
+                }
+    
+                const departureTime = new Date(resultPaths[i][0].departure_time).getTime();
+                const arrivalTime = new Date(resultPaths[i][resultPaths[i].length - 1].arrival_time).getTime();
+                pathTime = arrivalTime - departureTime;
+    
+                resultPaths[i] = { ...resultPaths[i], totalCost: pathCost, totalTime: pathTime };
+            }
+            if(criteria){
+                resultPaths.sort((a, b) => a.totalTime - b.totalTime); 
+            }
+            return resultPaths;
+    
         } catch (error) {
-            console.error('Error fetching data:', error);
+            // Throw the error to be handled by the caller
+            console.log(error)
             throw error;
         }
     },
@@ -140,7 +140,7 @@ class Graph {
         this._flights.push(flight);
     }
 
-    dijkstra(airport_id, criteria, rootPathTime = 0) {
+    dijkstra(airport_id, rootPathTime = 0) {
         if(rootPathTime !== 0) {
             console.log(rootPathTime)
         }
@@ -158,119 +158,35 @@ class Graph {
             }
             previous.set(n.id, null);
         });
-        return this.dijkstraAlgorithm(distances, toVisit, previous, criteria);
+        return this.dijkstraAlgorithm(distances, toVisit, previous);
     }
 
-    dijkstraAlgorithm(distances, toVisit, previous, criteria) {
+    dijkstraAlgorithm(distances, toVisit, previous) {
         const airportValue = findKeyWithLowestValue(distances, toVisit);
-        for(let jj =1; jj<11; jj++){
-            console.log(jj, distances.get(jj))
-        }
-        console.log("--------------------")
         if (airportValue=== null){
             return { distances, previous };
         }
-        //console.log(JSON.stringify(this.flights))
         this.flights.forEach(flight => {
-            //console.log(JSON.stringify(flight))
             if (flight.departure_airport_id === airportValue) {
                 let cost;
                 const departureTime  = new Date(flight.departure_time).getTime();
                 const arrivalTime = new Date(flight.arrival_time).getTime();
-                if (criteria === 1) {
-                    
-                    cost = arrivalTime - departureTime;
-                    if(flight.id === 138){
-                        console.log("lot 138: ", cost)
-                    }
-                    const previousFlightArrival = distances.get(airportValue).flightArrival
-                    if(flight.id === 138){
-                        console.log("lot 138: ", previousFlightArrival)
-                    }
-                    let transferTime = 0
-                        if(previousFlightArrival){
-                            
-                            transferTime = departureTime - previousFlightArrival;
-                            //console.log("transfertime", transferTime)
-                        }
-                        if(flight.id === 138){
-                            console.log("lot 100: ", cost)
-                            console.log("transfer time", transferTime)
-                            console.log("everything: ", transferTime + +cost + +distances.get(airportValue).flightCost)
-                            console.log("enemy: ", distances.get(flight.arrival_airport_id).flightCost)
-                        }
-                    if (transferTime + +cost + +distances.get(airportValue).flightCost < distances.get(flight.arrival_airport_id).flightCost && +distances.get(airportValue).flightArrival + 7200000 <= departureTime) {
-                        
-                        distances.set(flight.arrival_airport_id,{ flightCost: transferTime + +cost + +distances.get(airportValue).flightCost, flightArrival: arrivalTime});
-                        previous.set(flight.arrival_airport_id, flight);
-                    }
-                } else {
-                    cost = +flight.cost;
-                    if(flight.id === 183) {
-                        console.log("cost: " , cost)
-                        console.log("distance: ", +distances.get(airportValue).flightCost)
-                        console.log("previous shortest distance: " , distances.get(flight.arrival_airport_id).flightCost)
-                        console.log("Flight arrival: ", distances.get(airportValue).flightArrival)
-                        console.log("flightArrival + przesiadka: " , +distances.get(airportValue).flightArrival + 7200000 )
-                        console.log("departureTime: " , departureTime)
-                    }
+                    cost = +flight.cost
                    
                     if (+cost + +distances.get(airportValue).flightCost < distances.get(flight.arrival_airport_id).flightCost && +distances.get(airportValue).flightArrival + 7200000 <= departureTime) {
-                        if(flight.id === 108){
-                            console.log("Arrival time in 108" , arrivalTime)
-                        }
+                      
                         distances.set(flight.arrival_airport_id,{ flightCost: +cost + +distances.get(airportValue).flightCost, flightArrival: arrivalTime});
                         previous.set(flight.arrival_airport_id, flight);
                     }
                 }
-                if(flight.id === 183) {
-                    // console.log("aaaaaaaaaaaaaaaaaasssssssssssssssssssssssssssssssssssss")
-                    // console.log("first part: ", +cost + +distances.get(airportValue).flightCost)
-                    // console.log("second part: ", distances.get(flight.arrival_airport_id).flightCost)
-                    // console.log("third part: ", distances.get(airportValue).flightArrival + 7200000)
-                    // console.log("fourth part: ", departureTime)
-                    // previous.forEach(something => {
-                    //     console.log(JSON.stringify(something))
-                    // })
-                }
-                // adding the value of two hours to the arrival time
-                // if (+cost + +distances.get(airportValue).flightCost < distances.get(flight.arrival_airport_id).flightCost && +distances.get(airportValue).flightArrival + 7200000 <= departureTime) {
-                //     //console.log("11111111")
-                //     // if(flight.id === 108 || flight.id === 133) {
-                //     //     console.log(flight.id)
-                //     //     console.log(departureTime, +distances.get(airportValue).flightArrival + 7200000 )
-                //     //     console.log(distances.get(airportValue))
-                //     //     console.log(airportValue)
-                //     //     for(let jj =1; jj<11; jj++){
-                //     //         console.log(distances.get(jj))
-                //     //     }
-                //     // }
-                //     if(airportValue === 7) {
-                //         // for(let jj =1; jj<11; jj++){
-                //         //             console.log(jj, distances.get(jj))
-                //         //         }
-                //     }
-                //     if(criteria)
-                //     {
-                //         const previousFlightArrival = distances.get(airportValue).flightArrival
-                //         const thisDeparture = departureTime
-                //         distances.set(flight.arrival_airport_id,{ flightCost: (departureTime - previousFlightArrival) +cost + +distances.get(airportValue).flightCost, flightArrival: arrivalTime});
-                //     }
-                //     else{
-                //         distances.set(flight.arrival_airport_id,{ flightCost: +cost + +distances.get(airportValue).flightCost, flightArrival: arrivalTime});
-                //     }
-                //      // to jest git
-                //     previous.set(flight.arrival_airport_id, flight);
-                // }
-            }
+               
         });
-       // console.log("********************************")
         toVisit.delete(airportValue);
 
         if (toVisit.size === 0) {
             return { distances, previous };
         } else {
-            return this.dijkstraAlgorithm(distances, toVisit, previous, criteria);
+            return this.dijkstraAlgorithm(distances, toVisit, previous);
         }
     }
 
@@ -288,10 +204,8 @@ class Graph {
             const potentialPaths = [];
         
             // Find the initial shortest path
-            const result = this.dijkstra(departure, criteria);
-            //console.log(JSON.stringify(result.previous))
+            const result = this.dijkstra(departure);
             const initialPath = reconstructPath(result.previous, departure, destination);
-            //console.log(JSON.stringify(initialPath))
         
             // If there's no path, return an empty array
             if (initialPath.length === 0) {
@@ -299,18 +213,8 @@ class Graph {
             }
         
             KShortestPaths.push(initialPath);
-            //console.log(KShortestPaths)
             for (let k = 1; k < K; k++) {
-                //console.log("///////////////////////////////////////////////")
-                // console.log(k)
-                // KShortestPaths.forEach(path => {
-                //     let way = []
-                //     path.forEach(p => {
-                //         way.push(p.id)
-                //     })
-                //     console.log(way)
-                // })
-                // console.log(KShortestPaths[k - 1])
+
                 for (let i = 0; i < KShortestPaths[k - 1].length; i++) {
 
                     const spurNode = KShortestPaths[k - 1][i].departure_airport_id;
@@ -321,51 +225,32 @@ class Graph {
                     // Remove edges that are part of the current K shortest paths
                     for (const path of KShortestPaths) {
                         path.forEach((flight) => {
-                            // for(let l = 0; l < rootPath.length; l++)
-                            // {
-                            //     if(flight.id === rootPath[l].id){
-                            //         //console.log(flight.id)
-                            //         this.removeFlight(flight.id);
-                            //         edgesRemoved.push(flight);
-                                    
-                            //     }
-                            // }
-                            //console.log(spurNode)
+                            
                             if(flight.departure_airport_id === spurNode){
                                         this.removeFlight(flight.id);
                                         edgesRemoved.push(flight);
-                                        console.log(flight.id)
                             }
                             
                         })
-                        //console.log(JSON.stringify(edgesRemoved)) tu jest git
                     }
         
                     // Calculate the spur path from the spur node
-                    console.log( JSON.stringify(rootPath))
-                    console.log(spurNode)
                     const rootPathTime = new Date(rootPath[rootPath.length - 2]?.arrival_time).getTime()
-                    console.log(new Date(rootPath[rootPath.length - 2]?.arrival_time).getTime()) 
                     let spurPathResult;
-                    console.log(departure)
                     
                     if(spurNode !== departure){
-                        spurPathResult = this.dijkstra(spurNode, criteria, rootPathTime);
+                        spurPathResult = this.dijkstra(spurNode, rootPathTime);
                     }
                     else{
-                        spurPathResult = this.dijkstra(spurNode, criteria);
+                        spurPathResult = this.dijkstra(spurNode);
                     }
-                    //spurPathResult = this.dijkstra(spurNode, criteria);
                     const spurPath = reconstructPath(spurPathResult.previous, spurNode, destination);
         
                     if (spurPath.length !== 0) {
                         const totalPath = rootPath.slice(0, rootPath.length - 1).concat(spurPath);
         
                         //Check if the path already exists
-                        if (!this.isDuplicatePath(totalPath, potentialPaths)) {
-                            potentialPaths.push({ path: totalPath, cost: this.calculatePathCost(totalPath, criteria, edgesRemoved) });
-                        }
-                        //potentialPaths.push({ path: totalPath, cost: this.calculatePathCost(totalPath, criteria, edgesRemoved) });
+                        potentialPaths.push({ path: totalPath, cost: this.calculatePathCost(totalPath, edgesRemoved) });
                     }
         
                     // Add back the removed edges
@@ -379,17 +264,13 @@ class Graph {
                 }
         
                 // Sort the potential paths by total cost
-                potentialPaths.sort((a, b) => a.cost - b.cost); // dopisać jesli criteria to czas
-                potentialPaths.forEach(potentialPath => {
-                    console.log(JSON.stringify(potentialPath.path), potentialPath.cost)
-                })
+                potentialPaths.sort((a, b) => a.cost - b.cost); 
                 let nextPath = potentialPaths.shift().path;
-                //console.log(JSON.stringify(nextPath))
                 
                 // Ensure that the next path is not a duplicate of any previously found paths
                 while(true)
                 {
-                    if (!this.isDuplicatePath(nextPath, KShortestPaths) ){ //&&this.isValidPath(nextPath)) {
+                    if (!this.isDuplicatePath(nextPath, KShortestPaths) ){ 
                     
                         KShortestPaths.push(nextPath);
                         break;
@@ -401,45 +282,23 @@ class Graph {
                         nextPath = potentialPaths.shift().path;
                     }
                 }
-                // if (potentialPaths.length === 0) {
-                //     break;
-                // }
-                
-                //console.log(JSON.stringify(KShortestPaths))
             }
         
             return KShortestPaths
         }
     
-    // /**
-    //  * Helper method to calculate the total cost of a path.
-    //  * @param {Array} path - An array of airport IDs representing the path.
-    //  * @param {string} criteria - Criteria for pathfinding (e.g., cost, time).
-    //  * @returns {number} The total cost of the path.
-    //  */
-    calculatePathCost(path, criteria, edgesRemoved) {
+
+    calculatePathCost(path, edgesRemoved) {
         let totalCost = 0;
-       // console.log(JSON.stringify(path))
         const flightsWithRemovedFlights = this.flights.concat(edgesRemoved)
         for (let i = 0; i < path.length; i++) {
             const flight = flightsWithRemovedFlights.find(f => f.id === path[i].id);
-            // console.log(JSON.stringify(this._flights))
-            // console.log(flight)
-            if (criteria === 1) {
-                const departureTime = new Date(path[i].departure_time).getTime();
-                const arrivalTime = new Date(path[path.length-1].arrival_time).getTime();
-                totalCost = arrivalTime - departureTime;
-                break
-            } else {
                 totalCost += +flight.cost;
-            }
         }
-        //console.log(totalCost)
         return totalCost;
     }
 
     removeFlight(edge) {
-        //console.log(edge)
         this.flights = this.flights.filter(f => !(f.id === edge));
     }
 
@@ -449,23 +308,7 @@ class Graph {
                 flight.arrival_airport_id === newPath[index].arrival_airport_id &&
                 flight.id === newPath[index].id));
     }
-    isValidPath(path) {
-        console.log(JSON.stringify(path));
-        if(path.length === 1) {
-            return true;
-        }
-        for(let i = 0; i < path.length -1; i++) {
-            console.log(JSON.stringify(path[i]));
-            const getArrivalTime = new Date(path[i].arrival_time).getTime();
-            console.log(new Date(path[i].arrival_time), getArrivalTime + 7200000)
-            const getDepartureTime = new Date(path[i+1].departure_time).getTime()
-            console.log(new Date(path[i+1].departure_time), getDepartureTime)
-            if(getArrivalTime + 7200000 > getDepartureTime) {
-                return false
-            }
-        }
-        return true
-    }
+    // 
 }
 /**
  * // function to find the lowest value in a map with corresponding key
@@ -478,27 +321,11 @@ function findKeyWithLowestValue(distances, toVisit) {
     let lowestKey = null;
   
     for (const [key, value] of distances) {
-        //  console.log("key: " + key + ", value: " + JSON.stringify(value))
-        // console.log(value.flightCost < lowestValue && toVisit.has(key))
-        // console.log("size: " + toVisit.size)
-        // console.log(lowestValue)
-        // console.log(lowestKey)
         if(toVisit.size === 1) {
-        //     const iterator1 = toVisit.entries();
-        //     console.log("czy to ta trójka: ", value.flightCost < lowestValue)
-        //     console.log("aaaaaa" + value.flightCost)
-        //     console.log("eeee", toVisit.has(key) )
-        //     for (const entry of iterator1) {
-        //     console.log(entry);
-        //     //console.log(distances(entry))
-        //     // Expected output: Array [42, 42]
-        //     // Expected output: Array ["forty two", "forty two"]
-        // }
         }
       if (value.flightCost < lowestValue&& toVisit.has(key)) {
         lowestValue = value.flightCost;
         lowestKey = key;
-        //console.log("lowestKey: " + lowestKey)
       }
     }
   
@@ -546,4 +373,3 @@ Object.defineProperty(Array.prototype, "equals", { enumerable: false });
 
 
 module.exports = Flight
-//module.exports.reconstructPath
