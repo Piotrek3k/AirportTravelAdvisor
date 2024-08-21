@@ -7,7 +7,7 @@
 
 ## Description
 
-Implementation of airport travel system. System lists available flights between two airports in order of cost or time by using Yen's K-Shortest Paths algorithm.  
+Implementation of airport travel system. System lists available flights between two airports in order of cost or time by using Yen's K-Shortest Paths algorithm. User specifies the criteria as 0 is for the cheapest travel route and 1 is for the fastest travel route. 
 
 ## Technical requirements
 
@@ -248,7 +248,7 @@ curl -X DELETE 'api/users/1' \
     - **departure_airport_id:** (int, required) - Departure airport ID
     - **arrival_airport_id:** (int, required) - Arrival airport ID
     - **date:** (string, required) - Date in `YYYY-MM-DD` format
-    - **criteria:** (int, required) - Criteria (0, 1, or 2)
+    - **criteria:** (int, required) - Criteria (0, or 1) - cheapest or fastest
 - **Request:**
 ```sh
 curl -X GET 'api/routes' \
