@@ -3,6 +3,10 @@ const userController = require('../../controllers/userController');
 
 describe('User Controller', () => {
     let req, res;
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
 
     beforeEach(() => {
         req = {

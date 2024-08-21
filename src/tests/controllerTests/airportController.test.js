@@ -3,6 +3,10 @@ const airportController = require('../../controllers/airportController');
 
 describe('Airport Controller', () => {
     let req, res;
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
 
     beforeEach(() => {
         req = {

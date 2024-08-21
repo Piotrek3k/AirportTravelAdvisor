@@ -13,6 +13,10 @@ beforeAll(() => {
 });
 
 describe('Auth Controller', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -93,45 +97,36 @@ describe('Auth Controller', () => {
         });
 
         it('should return 500 if there is a database error', async () => {
-            // Arrange
             const mockError = new Error('Database error');
             User.getByUsername.mockImplementation((username, callback) => {
                 callback(mockError, null);
             });
 
-            // Act
             await authController.login(req, res);
 
-            // Assert
             expect(res.status).toHaveBeenCalledWith(500);
             expect(res.send).toHaveBeenCalledWith(mockError);
         });
 
         it('should return 401 if the username is not found', async () => {
-            // Arrange
             User.getByUsername.mockImplementation((username, callback) => {
                 callback(null, []);
             });
 
-            // Act
             await authController.login(req, res);
 
-            // Assert
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.send).toHaveBeenCalledWith('Invalid credentials');
         });
 
         it('should return 401 if the password is incorrect', async () => {
-            // Arrange
             User.getByUsername.mockImplementation((username, callback) => {
                 callback(null, [{ id: 1, username: 'testuser', password_hash: 'wrongpassword' }]);
             });
             bcrypt.compare.mockResolvedValue(false);
 
-            // Act
             await authController.login(req, res);
 
-            // Assert
             expect(User.getByUsername).toHaveBeenCalledWith('testuser', expect.any(Function));
             expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'wrongpassword');
             expect(res.status).toHaveBeenCalledWith(401);
@@ -139,12 +134,10 @@ describe('Auth Controller', () => {
         });
 
         it('should return a token if the login is successful', async () => {
-            // Arrange
             User.getByUsername = jest.fn().mockImplementation((username, callback) => {
                 callback(null, [{ id: 1, username: 'testuser', password: 'hashedpassword' }]);
             });
-            
-            // Mock bcrypt.compare to resolve as true, indicating a successful password match
+
             bcrypt.compare.mockResolvedValue(true);
 
             const mockToken = 'mockToken';
@@ -152,15 +145,11 @@ describe('Auth Controller', () => {
                 update: jest.fn().mockReturnThis(),
                 digest: jest.fn().mockReturnValue(Buffer.from(mockToken, 'base64'))
             });
-        
-            // Act
+
             await authController.login(req, res);
-        
-            // Assert
+
             
             expect(User.getByUsername).toHaveBeenCalledWith('testuser', expect.any(Function));
-            
-            // Expect the response to include a token in JSON format
             expect(res.json).toHaveBeenCalledWith({
                 token: expect.any(String),
             });

@@ -3,6 +3,10 @@ const flightController = require('../../controllers/flightController');
 
 describe('Flight Controller', () => {
     let req, res;
+    
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
     beforeEach(() => {
         req = {
