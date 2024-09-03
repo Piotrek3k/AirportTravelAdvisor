@@ -70,7 +70,7 @@ exports.findRoute = async (req, res) => {
         const results = await Flight.findRoute(departure_id, arrival_id, 20, criteria, targetDate);
         res.status(201).json(results);
     } catch (err) {
-        console.error("Error caught in controller:", err);
+        //console.error("Error caught in controller:", err);
         res.status(500).send(err);
     }
 }
