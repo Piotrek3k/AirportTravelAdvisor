@@ -221,8 +221,8 @@ describe('Flight model', () => {
                 callback(null, mockFlights);
             });
 
-            const routes = await Flight.findRoute(1, 2, 1, 'cost', '2024-08-01');
-            console.log(routes)
+            const routes = await Flight.findRoute(1, 2, 1, 0, '2024-08-01');
+           
             expect(routes.length).toBe(1);
             expect(routes[0].totalCost).toBe(100);
             expect(routes[0].totalTime).toBe(7200000); // 2 hours in milliseconds

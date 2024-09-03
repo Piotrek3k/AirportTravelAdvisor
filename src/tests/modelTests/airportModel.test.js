@@ -1,7 +1,6 @@
 const db = require('../../../config/dbConfig');
 const Airport = require('../../models/airportModel');
 
-// Mock the db.query method
 jest.mock('../../../config/dbConfig', () => ({
     query: jest.fn(),
 }));
@@ -9,7 +8,6 @@ jest.mock('../../../config/dbConfig', () => ({
 describe('Airport Model', () => {
 
     afterEach(() => {
-        // Clear all mocks after each test
         jest.clearAllMocks();
     });
 
