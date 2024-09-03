@@ -1,6 +1,5 @@
 const Airport = require('../models/airportModel');
 
-// Get all airports
 exports.getAllAirports = (req, res) => {
     Airport.getAll((err, results) => {
         if (err) {
@@ -11,7 +10,6 @@ exports.getAllAirports = (req, res) => {
     });
 };
 
-// Get airport by ID
 exports.getAirportById = (req, res) => {
     const id = req.params.id;
     Airport.getById(id, (err, result) => {
@@ -25,7 +23,6 @@ exports.getAirportById = (req, res) => {
     });
 };
 
-// Create a new airport
 exports.createAirport = (req, res) => {
     const newAirport = req.body;
     Airport.create(newAirport, (err, result) => {
@@ -37,7 +34,6 @@ exports.createAirport = (req, res) => {
     });
 };
 
-// Update an airport
 exports.updateAirport = (req, res) => {
     const id = req.params.id;
     const updatedAirport = req.body;
@@ -52,7 +48,6 @@ exports.updateAirport = (req, res) => {
     });
 };
 
-// Delete an airport
 exports.deleteAirport = (req, res) => {
     const id = req.params.id;
     Airport.delete(id, (err, result) => {
