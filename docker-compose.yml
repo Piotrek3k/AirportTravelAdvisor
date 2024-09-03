@@ -8,8 +8,9 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - DB_HOST=localhost
+      - DB_HOST=my_mysql_db
       - DB_USER=root
+      - DB_PORT=3306
       - DB_PASSWORD=password
       - DB_NAME=airport_advisor_system_db
     depends_on:
