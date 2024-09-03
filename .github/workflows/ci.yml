@@ -47,6 +47,6 @@ jobs:
 
     - name: Deploy to Docker Hub (Optional)
       run: |
-        docker build -t yourusername/yourapp:latest .
+        docker build -t piotrek3k/airporttraveladvisor:latest .
         echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-        docker push yourusername/yourapp:latest
+        docker push piotrek3k/airporttraveladvisor:latest
