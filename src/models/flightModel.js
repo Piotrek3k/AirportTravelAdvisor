@@ -80,7 +80,7 @@ class Flight {
             }
             if(criteria) 
             {
-                return resultPaths.sort((a, b) => a.pathTime - b.pathTime);
+                return resultPaths.sort((a, b) => a.totalTime - b.totalTime);
             }
             return resultPaths;
     

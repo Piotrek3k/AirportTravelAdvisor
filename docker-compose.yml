@@ -27,6 +27,7 @@ services:
       - DB_PORT=3306
       - DB_PASSWORD=password
       - DB_NAME=airport_advisor_system_db
+      - SECRET_KEY=y7KJ3kI0zH9/A7pRQ+uYzsvTy+UeW4lMCw6tX+f+JcA
     depends_on:
         db:
           condition: service_healthy
